@@ -24,26 +24,25 @@ def greatest_neighbour(x, y, arr):
     return None
 
 
-if __name__ == '__main__':
+def test(fname):
     # получаем яркость картинки
-    lightness = imread("../img/test1.jpg")
+    lightness = imread(fname)
     lightness = (lightness.min(axis=2) + lightness.max(axis=2)) / 2
 
     # сглаживаем
     lightness = gaussian_filter(lightness, 3)
 
-    x = np.arange(lightness.shape[0])
-    y = np.arange(lightness.shape[1])
-    # грязный хак для прямоугольных картинок
-    x, y = np.meshgrid(y, x)
+    x = np.arange(lightness.shape[1])
+    y = np.arange(lightness.shape[0])
+    x, y = np.meshgrid(x, y)
 
     plt.contourf(x, y, lightness)
 
     results = set()
 
     for i in range(1000):
-        cx = np.random.choice(np.arange(lightness.shape[0]))
-        cy = np.random.choice(np.arange(lightness.shape[1]))
+        cx = np.random.choice(np.arange(lightness.shape[1]))
+        cy = np.random.choice(np.arange(lightness.shape[0]))
 
         r = greatest_neighbour(cx, cy, lightness)
         while r:
@@ -57,3 +56,8 @@ if __name__ == '__main__':
     plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
     plt.title("Distance: %d px" % ((s1[0] - s2[0])**2 + (s1[1] - s2[1])**2) ** .5)
     plt.show()
+
+if __name__ == '__main__':
+    test("../img/test1.jpg")
+    test("../img/test2.jpg")
+    test("../img/test3.jpg")
