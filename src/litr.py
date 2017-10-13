@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+import argparse
+import numpy as np
 from scipy.ndimage import gaussian_filter, imread
 from scipy.ndimage.interpolation import shift
-from matplotlib import pyplot as plt
-import numpy as np
 
 
-def test(fname):
+def litr(fname, show=False):
+    if show:
+        from matplotlib import pyplot as plt
     # получаем яркость картинки
     lightness = imread(fname)
     lightness = (lightness.min(axis=2) + lightness.max(axis=2)) / 2
@@ -18,7 +20,8 @@ def test(fname):
     y = np.arange(lightness.shape[0])
     x, y = np.meshgrid(x, y)
 
-    plt.contourf(x, y, lightness)
+    if show:
+        plt.contourf(x, y, lightness)
 
     shifts = [(dx, dy) for dx in range(-1, 2)
                        for dy in range(-1, 2)
@@ -38,11 +41,22 @@ def test(fname):
 
     s1 = [xm[i1], ym[i1]]
     s2 = [xm[i2], ym[i2]]
-    plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
-    plt.title("Distance: %d px" % ((s1[0] - s2[0])**2 + (s1[1] - s2[1])**2) ** .5)
-    plt.show()
+
+    distance = ((s1[0] - s2[0]) ** 2 + (s1[1] - s2[1]) ** 2) ** .5
+
+    if show:
+        plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
+        plt.title("Distance: %d px" % distance)
+        plt.show()
+
+    return distance
+
 
 if __name__ == '__main__':
-    test("../img/test1.jpg")
-    test("../img/test2.jpg")
-    test("../img/test3.jpg")
+    parser = argparse.ArgumentParser(description='Calculate the distance between the two brightest points.')
+    parser.add_argument('image', type=str, nargs=1,
+                        help='path to image')
+    parser.add_argument('-s', '--show', dest='show', action='store_true',
+                        help='show colored contour plot')
+    args = parser.parse_args()
+    print(litr(args.image[0], args.show))
