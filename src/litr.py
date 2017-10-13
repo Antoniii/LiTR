@@ -20,24 +20,24 @@ def test(fname):
 
     plt.contourf(x, y, lightness)
 
-    shifts = [(dx, dy) for dx in range(-1, 2) for dy in range(-1, 2) if dx != 0 or dy != 0]
+    shifts = [(dx, dy) for dx in range(-1, 2)
+                       for dy in range(-1, 2)
+                       if dx != 0 or dy != 0]
     local_maximums = np.full(lightness.shape, True)
     for s in shifts:
         local_maximums *= (lightness > shift(lightness, s))
-    print(local_maximums)
 
-    # структурируем для сортировки
-    results = np.core.records.fromarrays([x[local_maximums],
-                                          y[local_maximums],
-                                          lightness[local_maximums]],
-                                         names='x, y, im',
-                                         formats = 'i4, i4, f8')
+    xm = x[local_maximums]
+    ym = y[local_maximums]
+    lm = lightness[local_maximums]
 
-    # сортировать ради двух наибольших -- оверкилл
-    results.sort(order="im")
+    # ищем 2 максимума
+    i1 = lm.argmax()
+    lm[i1] = 0
+    i2 = lm.argmax()
 
-    s1 = results[-1]
-    s2 = results[-2]
+    s1 = [xm[i1], ym[i1]]
+    s2 = [xm[i2], ym[i2]]
     plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
     plt.title("Distance: %d px" % ((s1[0] - s2[0])**2 + (s1[1] - s2[1])**2) ** .5)
     plt.show()
