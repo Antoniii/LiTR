@@ -23,7 +23,7 @@ def test(fname):
     shifts = [(dx, dy) for dx in range(-1, 2)
                        for dy in range(-1, 2)
                        if dx != 0 or dy != 0]
-    local_maximums = np.full(lightness.shape, True)
+    local_maximums = np.full(lightness.shape, True, dtype=bool)
     for s in shifts:
         local_maximums *= (lightness > shift(lightness, s))
 
