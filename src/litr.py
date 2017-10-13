@@ -1,27 +1,9 @@
 #!/usr/bin/env python3
 
 from scipy.ndimage import gaussian_filter, imread
+from scipy.ndimage.interpolation import shift
 from matplotlib import pyplot as plt
 import numpy as np
-
-
-def greatest_neighbour(x, y, arr):
-    # сдвиги по осям
-    xshifts = np.arange(-1, 2)
-    yshifts = np.arange(-1, 2)
-    # индексы
-    xs = x + xshifts
-    ys = y + yshifts
-    ys = ys[ys < arr.shape[0]]
-    xs = xs[xs < arr.shape[1]]
-    ys = ys[ys >= 0]
-    xs = xs[xs >= 0]
-    xs, ys = np.meshgrid(xs, ys)
-    # положение максимума
-    i = np.unravel_index(np.argmax(arr[ys, xs]), xs.shape)
-    if xs[i] != x or ys[i] != y:
-        return xs[i], ys[i]
-    return None
 
 
 def test(fname):
@@ -38,21 +20,24 @@ def test(fname):
 
     plt.contourf(x, y, lightness)
 
-    results = set()
+    shifts = [(dx, dy) for dx in range(-1, 2) for dy in range(-1, 2) if dx != 0 or dy != 0]
+    local_maximums = np.full(lightness.shape, True)
+    for s in shifts:
+        local_maximums *= (lightness > shift(lightness, s))
+    print(local_maximums)
 
-    for i in range(1000):
-        cx = np.random.choice(np.arange(lightness.shape[1]))
-        cy = np.random.choice(np.arange(lightness.shape[0]))
+    # структурируем для сортировки
+    results = np.core.records.fromarrays([x[local_maximums],
+                                          y[local_maximums],
+                                          lightness[local_maximums]],
+                                         names='x, y, im',
+                                         formats = 'i4, i4, f8')
 
-        r = greatest_neighbour(cx, cy, lightness)
-        while r:
-            cx, cy = r
-            r = greatest_neighbour(cx, cy, lightness)
-        results.add((cx, cy, lightness[cy, cx]))
+    # сортировать ради двух наибольших -- оверкилл
+    results.sort(order="im")
 
-    results = list(results)
-    results.sort(key=lambda x: -x[2])
-    s1, s2 = results[:2]
+    s1 = results[-1]
+    s2 = results[-2]
     plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
     plt.title("Distance: %d px" % ((s1[0] - s2[0])**2 + (s1[1] - s2[1])**2) ** .5)
     plt.show()
