@@ -46,7 +46,7 @@ def litr(fname, show=False):
 
     if show:
         plt.plot([s1[0], s2[0]], [s1[1], s2[1]], color="k")
-        plt.title("Distance: %d px" % distance)
+        plt.title("Distance: %d px" % round(distance))
         plt.show()
 
     return distance
